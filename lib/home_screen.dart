@@ -19,6 +19,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _checkPermissions();
+    _checkOverlayStatus();
+  }
+
+  Future<void> _checkOverlayStatus() async {
+    try {
+      final isShowing = await FloatingWindowAndroid.isShowing();
+      if (mounted) {
+        setState(() {
+          _isOverlayShowing = isShowing;
+        });
+      }
+    } catch (e) {
+      // Ignore
+    }
   }
 
   Future<void> _checkPermissions() async {
@@ -30,7 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      // Fallback
       if (mounted) {
         setState(() {
           _hasPermission = false;
@@ -42,16 +55,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _requestPermissions() async {
     setState(() => _isLoading = true);
     try {
-      // Buka halaman pengaturan overlay
       final status = await Permission.systemAlertWindow.request();
       if (mounted) {
         setState(() {
           _hasPermission = status.isGranted;
         });
         if (status.isGranted) {
-          _showSnackbar('Izin overlay diberikan!', Colors.green);
+          _showSnackbar('✅ Izin overlay diberikan!', Colors.green);
         } else {
-          _showSnackbar('Izin overlay ditolak!', Colors.red);
+          _showSnackbar('⚠️ Izin overlay ditolak!', Colors.red);
         }
       }
     } catch (e) {
@@ -64,7 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _toggleOverlay() async {
     if (_isOverlayShowing) {
-      // TUTUP OVERLAY
       try {
         await FloatingWindowAndroid.closeOverlay();
         if (mounted) {
@@ -79,9 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    // BUKA OVERLAY
     if (!_hasPermission) {
-      _showSnackbar('Izin overlay diperlukan!', Colors.orange);
+      _showSnackbar('⚠️ Izin overlay diperlukan!', Colors.orange);
       await _requestPermissions();
       if (!_hasPermission) {
         return;
@@ -92,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final result = await FloatingWindowAndroid.showOverlay(
-        height: 400,
+        height: 420,
         width: 340,
         alignment: OverlayAlignment.topRight,
         flag: OverlayFlag.defaultFlag,
@@ -103,10 +113,17 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       if (mounted) {
+        // Cek apakah overlay benar-benar muncul
+        final isShowing = await FloatingWindowAndroid.isShowing();
         setState(() {
-          _isOverlayShowing = true;
+          _isOverlayShowing = isShowing;
         });
-        _showSnackbar('✅ Overlay aktif!', Colors.green);
+
+        if (isShowing) {
+          _showSnackbar('✅ Overlay aktif!', Colors.green);
+        } else {
+          _showSnackbar('⚠️ Overlay gagal muncul!', Colors.red);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -152,8 +169,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _checkPermissions,
-            tooltip: 'Cek Izin',
+            onPressed: () {
+              _checkPermissions();
+              _checkOverlayStatus();
+            },
+            tooltip: 'Refresh Status',
           ),
         ],
       ),
@@ -336,7 +356,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 16),
 
-                // TOMBOL IZIN (jika belum)
                 if (!_hasPermission)
                   SizedBox(
                     height: 50,
@@ -359,7 +378,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const Spacer(),
 
-                // INFO CARD
                 Card(
                   color: const Color(0xFF1E1E1E),
                   shape: RoundedRectangleBorder(
@@ -380,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(width: 8),
                             const Text(
-                              'Panduan Penggunaan',
+                              'Cara Menggunakan',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -393,8 +411,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           '1. Berikan izin "Tampil di atas aplikasi lain"\n'
                           '2. Buka game yang ingin di-scan\n'
-                          '3. Klik "Buka Overlay" untuk memulai scanning\n'
-                          '4. Cari nilai memory dan edit sesuai keinginan',
+                          '3. Klik "Buka Overlay"\n'
+                          '4. Jika overlay tidak muncul, cek izin di Pengaturan\n'
+                          '5. Overlay akan muncul di pojok kanan atas',
                           style: TextStyle(
                             color: Colors.grey.shade400,
                             fontSize: 12,
@@ -408,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 8),
                 Text(
-                  '⚠️ Membutuhkan akses ROOT untuk memory editing real',
+                  '⚠️ Beberapa game dengan anti-cheat mungkin memblokir overlay',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey.shade600,
