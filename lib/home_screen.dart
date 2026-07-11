@@ -2,6 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return OverlaySupport(
+      child: MaterialApp(
+        title: 'Cheat Overlay',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          colorScheme: const ColorScheme.dark(
+            primary: Color(0xFF1A73E8),
+            secondary: Color(0xFF4FC3F7),
+            surface: Color(0xFF1E1E1E),
+            background: Color(0xFF121212),
+          ),
+          useMaterial3: true,
+        ),
+        home: const HomeScreen(),
+      ),
+    );
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -13,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isOverlayShowing = false;
   bool _hasPermission = false;
   bool _isLoading = false;
+  OverlaySupportEntry? _overlayEntry;
 
   @override
   void initState() {
@@ -61,9 +91,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _toggleOverlay() {
     if (_isOverlayShowing) {
-      dismissOverlay();
+      _overlayEntry?.dismiss();
       setState(() {
         _isOverlayShowing = false;
+        _overlayEntry = null;
       });
       _showSnackbar('Overlay ditutup', Colors.grey);
     } else {
@@ -73,9 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
-      showOverlay(
-        context: context,
-        child: const OverlayWidget(),
+      _overlayEntry = showOverlay(
+        (context) => const OverlayWidget(),
         duration: const Duration(days: 365),
       );
 
@@ -621,7 +651,8 @@ class _OverlayWidgetState extends State<OverlayWidget> {
           const SizedBox(width: 4),
           GestureDetector(
             onTap: () {
-              dismissOverlay();
+              final entry = OverlaySupportEntry.of(context);
+              entry?.dismiss();
             },
             child: Container(
               padding: const EdgeInsets.all(4),
