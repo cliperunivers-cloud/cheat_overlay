@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:floating_window_android/floating_window_android.dart';
+import 'package:flutter_screen_overlay/flutter_screen_overlay.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'overlay_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _checkOverlayStatus() async {
     try {
-      final isShowing = await FloatingWindowAndroid.isShowing();
+      final isShowing = await OverlayService.isShowing();
       if (mounted) {
         setState(() {
           _isOverlayShowing = isShowing;
@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _toggleOverlay() async {
     if (_isOverlayShowing) {
       try {
-        await FloatingWindowAndroid.closeOverlay();
+        await OverlayService.hideOverlay();
         if (mounted) {
           setState(() {
             _isOverlayShowing = false;
@@ -101,29 +101,29 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // PERBAIKAN: Gunakan flag yang tepat
-      await FloatingWindowAndroid.showOverlay(
+      await OverlayService.showOverlay(
+        child: const OverlayWidget(),
+        position: OverlayPosition.topRight,
+        width: 320,
         height: 420,
-        width: 340,
-        alignment: OverlayAlignment.topRight,
-        flag:
-            OverlayFlag.focusPointer, // Ganti dari defaultFlag ke focusPointer
+        margin: const EdgeInsets.all(10),
+        borderRadius: 16,
+        backgroundColor: Colors.transparent,
+        flag: OverlayFlag.focusPointer,
         enableDrag: true,
-        positionGravity: PositionGravity.auto,
-        overlayTitle: "Cheat Engine",
-        overlayContent: "Memory Scanner Active",
+        enableSnap: true,
       );
 
       if (mounted) {
-        // Tunggu sebentar lalu cek status
         await Future.delayed(const Duration(milliseconds: 500));
-        final isShowing = await FloatingWindowAndroid.isShowing();
+        final isShowing = await OverlayService.isShowing();
         setState(() {
           _isOverlayShowing = isShowing;
         });
 
         if (isShowing) {
-          _showSnackbar('✅ Overlay aktif!', Colors.green);
+          _showSnackbar(
+              '✅ Overlay aktif! Ada logo di pojok kanan atas', Colors.green);
         } else {
           _showSnackbar('⚠️ Overlay gagal muncul! Cek izin', Colors.orange);
         }
@@ -415,8 +415,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           '1. Berikan izin "Tampil di atas aplikasi lain"\n'
                           '2. Buka game yang ingin di-scan\n'
                           '3. Klik "Buka Overlay"\n'
-                          '4. Jika overlay tidak muncul, cek izin di Pengaturan\n'
-                          '5. Overlay akan muncul di pojok kanan atas',
+                          '4. Akan muncul logo 🎯 di pojok kanan atas\n'
+                          '5. Klik logo untuk membuka menu lengkap',
                           style: TextStyle(
                             color: Colors.grey.shade400,
                             fontSize: 12,
@@ -430,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 8),
                 Text(
-                  '⚠️ Beberapa game dengan anti-cheat mungkin memblokir overlay',
+                  '⚠️ Pastikan izin overlay sudah aktif di Pengaturan HP',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey.shade600,
