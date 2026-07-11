@@ -2,7 +2,6 @@
     package="com.example.cheat_overlay">
     
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     
     <application
         android:label="Cheat Overlay"

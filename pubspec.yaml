@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_screen_overlay: ^1.0.6
+  overlay_support: ^2.1.1
   permission_handler: ^11.3.1
 
 dev_dependencies:

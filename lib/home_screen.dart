@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screen_overlay/flutter_screen_overlay.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,20 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _checkPermissions();
-    _checkOverlayStatus();
-  }
-
-  Future<void> _checkOverlayStatus() async {
-    try {
-      final isShowing = await OverlayService.isShowing;
-      if (mounted) {
-        setState(() {
-          _isOverlayShowing = isShowing ?? false;
-        });
-      }
-    } catch (e) {
-      // Ignore
-    }
   }
 
   Future<void> _checkPermissions() async {
@@ -73,68 +59,30 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _toggleOverlay() async {
+  void _toggleOverlay() {
     if (_isOverlayShowing) {
-      try {
-        await OverlayService.hideOverlay;
-        if (mounted) {
-          setState(() {
-            _isOverlayShowing = false;
-          });
-          _showSnackbar('Overlay ditutup', Colors.grey);
-        }
-      } catch (e) {
-        _showSnackbar('Error: $e', Colors.red);
-      }
-      return;
-    }
-
-    if (!_hasPermission) {
-      _showSnackbar('⚠️ Izin overlay diperlukan!', Colors.orange);
-      await _requestPermissions();
+      dismissOverlay();
+      setState(() {
+        _isOverlayShowing = false;
+      });
+      _showSnackbar('Overlay ditutup', Colors.grey);
+    } else {
       if (!_hasPermission) {
+        _showSnackbar('⚠️ Izin overlay diperlukan!', Colors.orange);
+        _requestPermissions();
         return;
       }
-    }
 
-    setState(() => _isLoading = true);
-
-    try {
-      await OverlayService.showOverlay(
-        child: const OverlayContent(),
-        position: OverlayPosition.topRight,
-        width: 320,
-        height: 420,
-        margin: const EdgeInsets.all(10),
-        borderRadius: 16,
-        backgroundColor: Colors.transparent,
-        flag: OverlayFlag.focusPointer,
-        enableDrag: true,
-        enableSnap: true,
+      showOverlay(
+        context: context,
+        child: const OverlayWidget(),
+        duration: const Duration(days: 365),
       );
 
-      if (mounted) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        final isShowing = await OverlayService.isShowing;
-        setState(() {
-          _isOverlayShowing = isShowing ?? false;
-        });
-
-        if (_isOverlayShowing) {
-          _showSnackbar(
-              '✅ Overlay aktif! Ada logo di pojok kanan atas', Colors.green);
-        } else {
-          _showSnackbar('⚠️ Overlay gagal muncul! Cek izin', Colors.orange);
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnackbar('❌ Gagal: $e', Colors.red);
-      }
-    }
-
-    if (mounted) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isOverlayShowing = true;
+      });
+      _showSnackbar('✅ Overlay aktif!', Colors.green);
     }
   }
 
@@ -171,10 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () {
-              _checkPermissions();
-              _checkOverlayStatus();
-            },
+            onPressed: _checkPermissions,
             tooltip: 'Refresh Status',
           ),
         ],
@@ -437,15 +382,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ==================== OVERLAY CONTENT ====================
-class OverlayContent extends StatefulWidget {
-  const OverlayContent({super.key});
+// ==================== OVERLAY WIDGET ====================
+class OverlayWidget extends StatefulWidget {
+  const OverlayWidget({super.key});
 
   @override
-  State<OverlayContent> createState() => _OverlayContentState();
+  State<OverlayWidget> createState() => _OverlayWidgetState();
 }
 
-class _OverlayContentState extends State<OverlayContent> {
+class _OverlayWidgetState extends State<OverlayWidget> {
   bool _isExpanded = false;
   final TextEditingController _searchController = TextEditingController();
   String _searchValue = '';
@@ -455,10 +400,7 @@ class _OverlayContentState extends State<OverlayContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: _isExpanded ? _buildExpandedOverlay() : _buildFloatingLogo(),
-    );
+    return _isExpanded ? _buildExpandedOverlay() : _buildFloatingLogo();
   }
 
   Widget _buildFloatingLogo() {
@@ -678,8 +620,8 @@ class _OverlayContentState extends State<OverlayContent> {
           ),
           const SizedBox(width: 4),
           GestureDetector(
-            onTap: () async {
-              await OverlayService.hideOverlay;
+            onTap: () {
+              dismissOverlay();
             },
             child: Container(
               padding: const EdgeInsets.all(4),
