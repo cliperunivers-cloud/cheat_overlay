@@ -9,10 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  floating_window_android: ^1.1.1
+  flutter_screen_overlay: ^1.0.6
   permission_handler: ^11.3.1
-  flutter_localizations:
-    sdk: flutter
 
 dev_dependencies:
   flutter_test:
