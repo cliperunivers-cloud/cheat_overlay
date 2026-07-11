@@ -28,8 +28,10 @@ class _OverlayScreenState extends State<OverlayScreen> {
   @override
   void initState() {
     super.initState();
-    // Set agar tidak bisa di-screenshot (optional)
-    // FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+    // Memastikan overlay tetap di atas
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemChannels.textInput.invokeMethod('TextInput.hide');
+    });
   }
 
   @override
@@ -464,10 +466,9 @@ class _OverlayScreenState extends State<OverlayScreen> {
       _statusMessage = 'Scanning...';
     });
 
-    // SIMULASI SCAN (diganti dengan implementasi real nanti)
+    // SIMULASI SCAN
     await Future.delayed(const Duration(seconds: 1));
 
-    // Hasil simulasi
     final results = [
       '0x7f8a4c20 -> $_searchValue',
       '0x7f8a4c28 -> $_searchValue',
@@ -500,7 +501,6 @@ class _OverlayScreenState extends State<OverlayScreen> {
 
     await Future.delayed(const Duration(seconds: 1));
 
-    // Filter hasil (simulasi)
     final filtered =
         _searchResults.where((e) => e.contains(_searchValue)).toList();
 
@@ -580,7 +580,6 @@ class _OverlayScreenState extends State<OverlayScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              // SIMULASI UPDATE
               setState(() {
                 _statusMessage = '✅ Nilai diubah: ${controller.text}';
               });

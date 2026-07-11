@@ -101,11 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await FloatingWindowAndroid.showOverlay(
+      // PERBAIKAN: Gunakan flag yang tepat
+      await FloatingWindowAndroid.showOverlay(
         height: 420,
         width: 340,
         alignment: OverlayAlignment.topRight,
-        flag: OverlayFlag.defaultFlag,
+        flag:
+            OverlayFlag.focusPointer, // Ganti dari defaultFlag ke focusPointer
         enableDrag: true,
         positionGravity: PositionGravity.auto,
         overlayTitle: "Cheat Engine",
@@ -113,7 +115,8 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       if (mounted) {
-        // Cek apakah overlay benar-benar muncul
+        // Tunggu sebentar lalu cek status
+        await Future.delayed(const Duration(milliseconds: 500));
         final isShowing = await FloatingWindowAndroid.isShowing();
         setState(() {
           _isOverlayShowing = isShowing;
@@ -122,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (isShowing) {
           _showSnackbar('✅ Overlay aktif!', Colors.green);
         } else {
-          _showSnackbar('⚠️ Overlay gagal muncul!', Colors.red);
+          _showSnackbar('⚠️ Overlay gagal muncul! Cek izin', Colors.orange);
         }
       }
     } catch (e) {

@@ -4,7 +4,6 @@ import 'home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Set orientation portrait
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
