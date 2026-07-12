@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       _overlayEntry = showOverlay(
-        (context) => const OverlayWidget(),
+        (context, topPadding) => const OverlayWidget(),
         duration: const Duration(days: 365),
       );
 
