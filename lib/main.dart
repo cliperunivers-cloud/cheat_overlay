@@ -320,11 +320,42 @@ class _OverlayContentState extends State<OverlayContent> {
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
-              // Tutup overlay (remove dari root)
-              final navigator = Navigator.of(context, rootNavigator: true);
-              final overlay = navigator.overlay;
-              if (overlay != null && overlay.entries.isNotEmpty) {
-                overlay.entries.last.remove();
+              setState(() {
+                _isExpanded = false;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(
+                Icons.chevron_right,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: () {
+              // Hapus overlay dengan cara yang benar
+              // Hapus overlay entry teratas
+              try {
+                final overlayState = Overlay.of(context);
+                // Cari dan hapus overlay entry
+                final navigator = Navigator.of(context, rootNavigator: true);
+                final overlay = navigator.overlay;
+                if (overlay != null) {
+                  // Hapus semua overlay entries
+                  overlay.debugDescribeChildren();
+                  // Gunakan context untuk menghapus
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+              } catch (e) {
+                // Jika gagal, coba cara lain
+                Navigator.of(context, rootNavigator: true).pop();
               }
             },
             child: Container(
@@ -344,6 +375,9 @@ class _OverlayContentState extends State<OverlayContent> {
       ),
     );
   }
+
+  // Variabel untuk _isExpanded
+  bool _isExpanded = false;
 
   Widget _buildStatusBar() {
     return Container(
