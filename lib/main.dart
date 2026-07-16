@@ -233,6 +233,7 @@ class _OverlayContentState extends State<OverlayContent> {
   List<String> _searchResults = [];
   bool _isScanning = false;
   String _statusMessage = 'Siap memindai';
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -340,22 +341,15 @@ class _OverlayContentState extends State<OverlayContent> {
           const SizedBox(width: 4),
           GestureDetector(
             onTap: () {
-              // Hapus overlay dengan cara yang benar
-              // Hapus overlay entry teratas
+              // Hapus overlay dengan cara yang benar - menggunakan root navigator
               try {
-                final overlayState = Overlay.of(context);
-                // Cari dan hapus overlay entry
-                final navigator = Navigator.of(context, rootNavigator: true);
-                final overlay = navigator.overlay;
-                if (overlay != null) {
-                  // Hapus semua overlay entries
-                  overlay.debugDescribeChildren();
-                  // Gunakan context untuk menghapus
-                  Navigator.of(context, rootNavigator: true).pop();
-                }
-              } catch (e) {
-                // Jika gagal, coba cara lain
                 Navigator.of(context, rootNavigator: true).pop();
+              } catch (e) {
+                // Jika gagal, coba alternatif
+                final navigator = Navigator.of(context, rootNavigator: true);
+                if (navigator.canPop()) {
+                  navigator.pop();
+                }
               }
             },
             child: Container(
@@ -375,9 +369,6 @@ class _OverlayContentState extends State<OverlayContent> {
       ),
     );
   }
-
-  // Variabel untuk _isExpanded
-  bool _isExpanded = false;
 
   Widget _buildStatusBar() {
     return Container(
