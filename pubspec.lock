@@ -62,14 +62,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
-  flutter_screen_overlay:
-    dependency: "direct main"
-    description:
-      name: flutter_screen_overlay
-      sha256: a196c884033d8ed0857b7c89002924e1c2dce437ccdf6e22103982679b40bf67
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.6"
   flutter_test:
     dependency: "direct dev"
     description: flutter
